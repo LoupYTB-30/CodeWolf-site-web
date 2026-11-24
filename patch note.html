@@ -187,8 +187,8 @@ label{font-size:13px;color:#8b949e;display:block;margin-bottom:4px}
 </div>
 
 <script>
-const ADMIN_PASSWORD = "LoupYTB_";
-const WH_PATCHNOTE = "https://discord.com/api/webhooks/1543192385675198465/6Bqcac63ee-COa6ceOR62ZPeLuWZ46_dRoH5oyGhlP1huadU7Ab2TZfxL7pPawOZ1ldE";
+const ADMIN_PASSWORD = "CodeWolf";
+const WH_PATCHNOTE = "";
 
 const APPS_SCRIPT_PATCHNOTE = "https://script.google.com/macros/s/AKfycbwnaGtZSh4GDRiTPvCpToYMb-942OrbQD9LdfsIA8fQ0L__6sU2aZdi5l3jkDEbCSNkqA/exec";
 
@@ -200,13 +200,13 @@ function buildDiscordPayload(version, cat, desc, done, todo, modify, remove, isE
   if(modify) fields.push({name:"✏️ À modifier",value:modify.split("\n").filter(l=>l.trim()).map(l=>"• "+l.trim()).join("\n"),inline:false});
   if(remove) fields.push({name:"🗑️ À supprimer",value:remove.split("\n").filter(l=>l.trim()).map(l=>"• "+l.trim()).join("\n"),inline:false});
   return {
-    content: isEdit ? "📝 Patch note mis à jour !" : "<@&1519783787892834456> — 📋 Nouveau patch note disponible !",
+    content: isEdit ? "📝 Patch note mis à jour !" : "<@&1558818717482360972> — 📋 Nouveau patch note disponible !",
     embeds:[{
       title: "📋 Patch Note — " + version,
       description: (desc?desc+"\n\n":"")+("**Catégorie :** "+catLabel),
       color: cat==="site" ? 3447003 : 5793266,
       fields,
-      footer:{text:"NoxStudio Patch Notes • "+(isEdit?"Modifié":"Publié")+" par "+adminPseudo+" • "+formatNow()},
+      footer:{text:"CodeWolf • "+(isEdit?"Modifié":"Publié")+" par "+adminPseudo+" • "+formatNow()},
       timestamp: new Date().toISOString()
     }]
   };
