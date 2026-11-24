@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'unsafe-inline'; connect-src https://script.google.com https://script.googleusercontent.com; frame-src https://challenges.cloudflare.com; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; connect-src https://script.google.com https://script.googleusercontent.com; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <title>Support CodeWolf — Tickets</title>
 <style>
@@ -79,7 +79,6 @@ label{font-size:13px;color:#8b949e;display:block;margin-bottom:4px}
 .toast.err{background:#3d1c1c;border-color:#da3633;color:#f85149}
 .toast.show{display:block}
 .lang-btn{position:fixed;top:16px;right:16px;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid #30363d;background:#161b22;color:#e6edf3;z-index:999}
-.captcha{margin:6px 0 10px;min-height:65px}
 @media(max-width:700px){.layout{grid-template-columns:1fr}}
 </style>
 </head>
@@ -123,7 +122,6 @@ label{font-size:13px;color:#8b949e;display:block;margin-bottom:4px}
     <textarea id="t-msg" maxlength="1500" data-i18n-ph="ph_msg"></textarea>
 
     <input class="hp" type="text" id="t-website" tabindex="-1" autocomplete="off" aria-hidden="true">
-    <div class="captcha" id="captcha-new"></div>
     <button class="btn primary" id="btn-create" type="button" data-i18n="send"></button>
     <div class="error" id="form-error"></div>
   </div>
@@ -149,7 +147,6 @@ label{font-size:13px;color:#8b949e;display:block;margin-bottom:4px}
     <input type="text" id="admin-name" maxlength="40" autocomplete="username">
     <label data-i18n="a_pwd"></label>
     <input type="password" id="admin-pwd" maxlength="200" autocomplete="current-password">
-    <div class="captcha" id="captcha-login"></div>
     <button class="btn primary" id="btn-login" type="button" data-i18n="login"></button>
     <div class="error" id="pwd-error"></div>
   </div>
@@ -177,12 +174,10 @@ label{font-size:13px;color:#8b949e;display:block;margin-bottom:4px}
 
 <div class="toast" id="toast"></div>
 
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=initCaptcha" async defer></script>
 <script>
 /* ================= CONFIG ================= */
 const CFG={
-  API:"COLLE_ICI_L_URL_DU_NOUVEAU_DEPLOIEMENT_APPS_SCRIPT",
-  SITEKEY:"COLLE_ICI_TA_CLE_PUBLIQUE_TURNSTILE"   // laisse vide pour désactiver le captcha (déconseillé)
+  API:"COLLE_ICI_L_URL_DU_NOUVEAU_DEPLOIEMENT_APPS_SCRIPT"
 };
 
 /* ================= UTILS ================= */
@@ -192,7 +187,7 @@ const CATS=["Support général","Bug / Problème","Demande de partenariat","Sanc
 const PRIOS=["Faible","Moyenne","Haute"];
 const STATUSES=["open","in_progress","closed"];
 let lang=(navigator.language||"fr").startsWith("fr")?"fr":"en";
-let token=null,adminName="",tickets=[],adminFilter="all",adminQuery="",selectedId=null,wid={};
+let token=null,adminName="",tickets=[],adminFilter="all",adminQuery="",selectedId=null;
 
 const I={
 fr:{subtitle:"Envoie ta demande — l'équipe te répond sur le site (et sur Discord si tu es sur le serveur)",
@@ -265,15 +260,6 @@ async function api(action,data){
   }catch(e){return{ok:false,error:"network"};}
 }
 
-/* ================= CAPTCHA ================= */
-function initCaptcha(){
-  if(!CFG.SITEKEY||CFG.SITEKEY.startsWith("COLLE")||!window.turnstile)return;
-  wid.new=turnstile.render("#captcha-new",{sitekey:CFG.SITEKEY,theme:"dark"});
-  wid.login=turnstile.render("#captcha-login",{sitekey:CFG.SITEKEY,theme:"dark"});
-}
-const capToken=k=>(window.turnstile&&wid[k]!==undefined)?turnstile.getResponse(wid[k]):"";
-const capReset=k=>{if(window.turnstile&&wid[k]!==undefined)turnstile.reset(wid[k]);};
-
 /* ================= i18n ================= */
 function applyLang(){
   document.documentElement.lang=lang;
@@ -319,12 +305,12 @@ $("btn-create").onclick=async()=>{
   const yes=inServer()==="yes";
   const d={inServer:inServer(),discord:$("t-discord").value.trim(),discordid:yes?$("t-discordid").value.trim():"",
     cat:$("t-cat").value,prio:$("t-prio").value,subject:$("t-subject").value.trim(),msg:$("t-msg").value.trim(),
-    website:$("t-website").value,captcha:capToken("new")};
+    website:$("t-website").value};
   if(!d.discord||!d.subject||!d.msg||(yes&&!d.discordid)){err.textContent=t("err_fields");return;}
   if(yes&&!/^\d{17,20}$/.test(d.discordid)){err.textContent=t("err_invalid_id");return;}
   $("btn-create").disabled=true;
   const r=await api("create",d);
-  $("btn-create").disabled=false;capReset("new");
+  $("btn-create").disabled=false;
   if(!r.ok){err.textContent=errMsg(r.error);return;}
   saveId(r.id);renderMine();
   ["t-discord","t-discordid","t-subject","t-msg"].forEach(i=>$(i).value="");
@@ -417,8 +403,8 @@ async function login(){
   const pseudo=$("admin-name").value.trim(),password=$("admin-pwd").value;
   if(!pseudo||!password){err.textContent=t("err_login");return;}
   $("btn-login").disabled=true;
-  const r=await api("login",{pseudo,password,captcha:capToken("login")});
-  $("btn-login").disabled=false;capReset("login");
+  const r=await api("login",{pseudo,password});
+  $("btn-login").disabled=false;
   if(!r.ok){err.textContent=errMsg(r.error);return;}
   token=r.token;adminName=r.pseudo;
   try{sessionStorage.setItem("stf",JSON.stringify({token,adminName}));}catch(e){}
