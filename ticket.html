@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; connect-src https://script.google.com https://script.googleusercontent.com; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<title>Support CodeWolf — Tickets</title>
+<title>Support Code Wolf — Tickets</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:Arial,sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh;padding:20px}
@@ -84,7 +84,7 @@ label{font-size:13px;color:#8b949e;display:block;margin-bottom:4px}
 </head>
 <body>
 <button class="lang-btn" id="lang-toggle" type="button">🇬🇧 English</button>
-<h1>🎫 Support CodeWolf</h1>
+<h1>🎫 Support Code Wolf</h1>
 <p class="subtitle" data-i18n="subtitle"></p>
 
 <div class="tabs">
@@ -294,6 +294,7 @@ document.querySelectorAll('input[name="inserver"]').forEach(r=>r.onchange=update
 
 function myIds(){try{return JSON.parse(localStorage.getItem("myTickets")||"[]");}catch(e){return[];}}
 function saveId(id){try{const a=myIds().filter(x=>x!==id);a.unshift(id);localStorage.setItem("myTickets",JSON.stringify(a.slice(0,10)));}catch(e){}}
+function removeId(id){try{localStorage.setItem("myTickets",JSON.stringify(myIds().filter(x=>x!==id)));}catch(e){}}
 function renderMine(){
   const a=myIds(),el=$("my-tickets");
   el.innerHTML=a.length?'<span style="font-size:12px;color:#8b949e">'+esc(t("mine"))+'</span>'+a.map(id=>'<span class="chip" data-id="'+esc(id)+'">'+esc(id)+'</span>').join(""):"";
@@ -337,6 +338,7 @@ async function searchTicket(){
   if(!id)return;
   el.innerHTML='<div class="empty">'+esc(t("loading"))+'</div>';
   const r=await api("track",{id});
+  if(!r.ok&&r.error==="not_found"){removeId(id);renderMine();}
   el.innerHTML=r.ok?ticketView(r.ticket,false):'<div style="color:#f85149;font-size:14px;margin-top:10px">'+esc(errMsg(r.error))+'</div>';
 }
 $("btn-search").onclick=searchTicket;
